@@ -77,6 +77,7 @@ class DSLTest extends TestKit(ActorSystem("relationship_management_system_test",
 
       resolver ! Message(saul_goodman, AddEdge(jmm_law, "worksAt"))
       resolver ! Message(saul_goodman, AddEdge(kim_wexler, "relativeOf"))
+      resolver ! Message(kim_wexler, AddEdge(ruth, "relativeOf"))
 
       resolver ! Message(elliot_alderson, AddEdge(darleen_alderson, "relativeOf"))
       resolver ! Message(elliot_alderson, AddEdge(allsafe_inc, "worksAt"))
@@ -111,6 +112,14 @@ class DSLTest extends TestKit(ActorSystem("relationship_management_system_test",
       val eventualResult = getSubscribedRelationshipOfEntities(businessSet, "employed")
         .flatMap(getBiDirectionalRelationshipOfEntities(_, "relativeOf"))
         .flatMap(getBiDirectionalRelationshipOfEntities(_, "friendOf"))
+      val idSet = Await.result(eventualResult, 5 second)
+      idSet.size should be(1)
+    }
+
+    "Add relationship between two person" in {
+      resolver ! Message(ruth, AddEdge(kim_wexler, "friendOf"))
+      Thread.sleep(1000)
+      val eventualResult = getIncomingRelationsOfAnEntity(kim_wexler, "friendOf")
       val idSet = Await.result(eventualResult, 5 second)
       idSet.size should be(1)
     }
